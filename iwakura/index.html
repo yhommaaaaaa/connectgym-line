@@ -35,7 +35,7 @@ body{margin:0;font-family:-apple-system,"Hiragino Sans",sans-serif;display:flex;
   function fire(){
     if(sent()){go();return;}
     try{localStorage.setItem(KEY,'1')}catch(e){}
-    window.dataLayer.push({event:'line_friend_added',store:CONFIG.STORE,eventCallback:go,eventTimeout:2000});
+    window.dataLayer.push({event:'line_friend_added',store:CONFIG.STORE,eventCallback:function(){setTimeout(go,800)},eventTimeout:2000});
     setTimeout(go,2500);
   }
   if(!window.liff){fallback();return;}
