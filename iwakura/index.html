@@ -40,6 +40,7 @@ body{margin:0;font-family:-apple-system,"Hiragino Sans",sans-serif;display:flex;
   }
   if(!window.liff){fallback();return;}
   liff.init({liffId:CONFIG.LIFF_ID}).then(function(){
+        if(!liff.isInClient() && !/iPhone|iPad|Android/i.test(navigator.userAgent)){fallback();return;}
     if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
     return liff.getFriendship().then(function(r){
       if(r.friendFlag){fire();}else{fallback('友だち追加がまだのようです。下のボタンから追加してください。');}
