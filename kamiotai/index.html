@@ -32,6 +32,18 @@ body{margin:0;font-family:-apple-system,"Hiragino Sans",sans-serif;display:flex;
   var KEY='cg_friend_sent_'+CONFIG.STORE, moved=false;
   function go(){if(!moved){moved=true;location.replace(chatUrl);}}
   function sent(){try{return localStorage.getItem(KEY)==='1'}catch(e){return false}}
+  var LOG_URL='https://script.google.com/macros/s/AKfycbyUlO4zQUOY3DBWMZNY50jOzZLV29bO0xHgFNY-1M-GEVAl2-j5zchZhQtCrcbrKVqc/exec';
+  // 友だち追加の記録（LINEのユーザーID・表示名と gclid を照合用のシートへ。広告媒体には送らない）
+  function logAdd(done){
+    var LK='cg_logged_'+CONFIG.STORE;
+    try{if(localStorage.getItem(LK)==='1'){done();return;}}catch(e){}
+    var q=new URLSearchParams(location.search);
+    liff.getProfile().then(function(p){
+      var b=JSON.stringify({type:'friend_added',store:CONFIG.STORE,userId:p.userId,displayName:p.displayName,
+        gclid:q.get('gclid')||'',fbclid:q.get('fbclid')||'',utm_source:q.get('utm_source')||'',utm_campaign:q.get('utm_campaign')||''});
+      try{navigator.sendBeacon(LOG_URL,new Blob([b],{type:'text/plain'}));localStorage.setItem(LK,'1');}catch(e){}
+    }).catch(function(){}).then(done);
+  }
   function fire(){
     if(sent()){go();return;}
     try{localStorage.setItem(KEY,'1')}catch(e){}
@@ -43,7 +55,7 @@ body{margin:0;font-family:-apple-system,"Hiragino Sans",sans-serif;display:flex;
         if(!liff.isInClient() && !/iPhone|iPad|Android/i.test(navigator.userAgent)){fallback();return;}
     if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
     return liff.getFriendship().then(function(r){
-      if(r.friendFlag){fire();}else{fallback('友だち追加がまだのようです。下のボタンから追加してください。');}
+      if(r.friendFlag){logAdd(fire);}else{fallback('友だち追加がまだのようです。下のボタンから追加してください。');}
     });
   }).catch(function(){fallback();});
 })();
