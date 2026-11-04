@@ -50,13 +50,16 @@ body{margin:0;font-family:-apple-system,"Hiragino Sans",sans-serif;display:flex;
     window.dataLayer.push({event:'line_friend_added',store:CONFIG.STORE,eventCallback:function(){setTimeout(go,800)},eventTimeout:2000});
     setTimeout(go,2500);
   }
-  if(!window.liff){fallback();return;}
+  // LINEアプリの外（Instagram・Facebookのアプリ内ブラウザ、Safari等）ではログインさせず、
+  // lin.ee と同じ友だち追加画面へ直接移動する（ログイン画面での離脱を防ぐ。追加数は Webhook 側で集計）
+  var mobile=/iPhone|iPad|Android/i.test(navigator.userAgent);
+  function outside(){if(mobile){location.replace(addUrl);}else{fallback();}}
+  if(!window.liff){outside();return;}
   liff.init({liffId:CONFIG.LIFF_ID}).then(function(){
-        if(!liff.isInClient() && !/iPhone|iPad|Android/i.test(navigator.userAgent)){fallback();return;}
-    if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
+    if(!liff.isInClient()||!liff.isLoggedIn()){outside();return;}
     return liff.getFriendship().then(function(r){
       if(r.friendFlag){logAdd(fire);}else{fallback('友だち追加がまだのようです。下のボタンから追加してください。');}
     });
-  }).catch(function(){fallback();});
+  }).catch(outside);
 })();
 </script></body></html>
